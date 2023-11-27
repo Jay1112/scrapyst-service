@@ -5,7 +5,7 @@ class ScrapeService {
         const { PRODUCT_ID } = productData ;
         const { $ } = await cheerio.fetch(`https://www.amazon.in/dp/${PRODUCT_ID}`);
         const Seller_1 = $("#merchant-info > .a-link-normal").text();
-        const SL_1 = $("#corePriceDisplay_desktop_feature_div > .a-section.a-spacing-none.aok-align-center > .a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > .a-offscreen").eq(0).text().trim();
+        const SL_1 = $("#corePriceDisplay_desktop_feature_div > .a-section.a-spacing-none.aok-align-center > .a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > span").eq(0).text().trim();
         const Deal_Text = $("#dealBadgeSupportingText > span").eq(0).text();
         const SL_2 = $("#mbc-price-1").text().trim();
         const Seller_2 = $("#mbc-sold-by-1 > .a-size-small.mbcMerchantName").text().trim();
