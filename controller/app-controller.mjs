@@ -31,10 +31,10 @@ class AppController {
             const scrapedList = [];
             await scrapeService.scrapeAllProduct(productData,scrapedList,0);
 
-            const scrapeSheet = csvService.csvTransformationUsing2DList(scrapedList);
+            const scrapeSheetBuffer = csvService.csvTransformationUsing2DList(scrapedList);
 
             // mail service
-            // const mailResponse = await mailService.composeMail(csvData,usersList);
+            const mailResponse = await mailService.composeMail(scrapeSheetBuffer,usersList);
 
             res.status(StatusCodeTypes.OK).json({success  :true, data : scrapedList});
                     

@@ -1,3 +1,5 @@
+import xlsx from 'xlsx';
+
 class CsvService {
 
     csvTransformationUsing2DList(productList){
@@ -16,7 +18,7 @@ class CsvService {
 
         // fields
         const fields = ["SR_NO","PRODUCT_ID","TITLE","Seller_1","SP_1","Deal_Text","Seller_2","SP_2","Seller_3","SP_3"];
-        scrapeSheet.push([fields]);
+        scrapeSheet.push(fields);
 
         // product Data
         productList.forEach((item) => {
@@ -38,7 +40,16 @@ class CsvService {
             scrapeSheet.push(product);
         });
 
-        return scrapeSheet;
+        const ws = xlsx.utils.aoa_to_sheet(scrapeSheet);
+        const wb = xlsx.utils.book_new();
+        xlsx.utils.book_append_sheet(wb, ws, 'Sheet 1');
+
+        // Create a buffer from the workbook
+        const buffer = xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
+
+        // const scrapeSheetString = scrapeSheet.map(style => style.join(' ')).join('\n');
+
+        return buffer;
     }
 
 }

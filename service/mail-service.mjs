@@ -24,6 +24,13 @@ class MailService {
 
     async composeMail(csvData,usersList){
       try{
+        const date = new Date();
+        let fileString = '';
+        if(date.getHours() < 12){
+          fileString = date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear() + '-' + date.getHours() + '_' + 'AM' + '.xlsx' ;
+        }else{
+          fileString = date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear() + '-' + date.getHours() + '_' + 'PM' + '.xlsx' ;
+        }
         let MailGenerator = new Mailgen({
           theme : 'default',
           product : {
@@ -47,8 +54,9 @@ class MailService {
           html: mail, 
           attachments: [
             {
-              filename: "file.csv",
+              filename: fileString,
               content: csvData,
+              encoding: 'base64',
             },
           ],
         };
