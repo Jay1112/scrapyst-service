@@ -64,7 +64,7 @@ class AppController {
             const bufferArr = [{ companyName : 'ETRADE' ,bufferData :  scrapeSheetBuffer},{ companyName : 'RK_WORLD', bufferData : rkworldDataScrapeSheetBuffer}];
 
             // mail service
-            const mailResponse = await mailService.composeMail(bufferArr,usersList);
+            // const mailResponse = await mailService.composeMail(bufferArr,usersList);
 
             res.status(StatusCodeTypes.OK).json({success  :true, data : [...scrapedList,...rkworldDataScrapedList]});
                     
