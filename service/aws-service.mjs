@@ -13,8 +13,8 @@ class AwsService {
         return excelData;
     }
 
-    async getProductsFromMasterSheet(){
-        const excelData = await this.getFile(process.env.MASTER_FILE_URL);
+    async getProductsFromMasterSheet(fileurl){
+        const excelData = await this.getFile(fileurl);
         const workbook = xlsx.read(excelData.data, { type: 'buffer' });
 
         const sheetName = workbook.SheetNames[0];
