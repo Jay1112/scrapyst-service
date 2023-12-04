@@ -69,6 +69,7 @@ class AppController {
             res.status(StatusCodeTypes.OK).json({success  :true, data : [...scrapedList,...rkworldDataScrapedList]});
                     
         }catch(err){
+            console.log(err);
             res.status(StatusCodeTypes.BAD_REQUEST).json({ success : false, message : err.message });
         }
     }
