@@ -42,7 +42,7 @@ class ScrapeService {
         }
         const product = productList[curr_ind];
         if((curr_ind % this.scrapeRateLimiting) === 0){
-            await sleep(this.delayTime);
+            await this.sleep(this.delayTime);
         }
         const data = await this.scrapeProduct(product);
         scrapedList.push(data);
