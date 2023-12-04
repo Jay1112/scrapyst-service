@@ -2,7 +2,7 @@ import cheerio  from 'cheerio-httpcli';
 
 class ScrapeService {
 
-    delayTime = 60000 ;
+    delayTime = 300000 ;
     scrapeRateLimiting = 50 ;
 
     async scrapeProduct(productData){
