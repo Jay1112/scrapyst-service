@@ -1,14 +1,55 @@
 import cheerio  from 'cheerio-httpcli';
 import { config } from 'dotenv';
+import fireBaseService from './firebase-service.mjs';
 
 config();
 
 class ScrapeService {
 
-    minLimit = process.env.MIN_LIMIT ;
-    maxLimit = process.env.MAX_LIMIT ;
-    scrapeRateLimiting = process.env.RATE_LIMIT_VALUE ;
-    listLimit = process.env.LIST_LIMIT || 50;
+    dataContainer = null ;
+    delayTime = 60000 ;
+    scrapeLimit = 25 ;
+
+    constructor(){
+        this.dataContainer = new Map();
+        this.delayTime = 60000;
+    }
+
+    clearContainer(){
+        this.dataContainer.clear();
+    }
+
+    setDataContainer(data){
+        this.dataContainer.set("data",data);
+    }
+
+    getDataContainer(){
+        if(!this.dataContainer.get("data")){
+            return [];
+        }
+        return this.dataContainer.get("data");
+    }
+
+    async updateRangeForNextStep(company,isError){
+        const rangeObj = await fireBaseService.getRange();
+        let value = rangeObj[company];
+        if(isError){
+            value = -1;
+        }
+        switch(value){
+            case -1 :   value = 100 ;
+                        this.clearContainer();
+                        break;
+            case 100 :  value = 200 ; 
+                        break ;
+            case 200 :  value = 300 ; 
+                        break ;
+            case 300 :  value = 100 ;
+                        this.clearContainer() ;  
+                        break;
+        }
+        await fireBaseService.updateRange(rangeObj,company,value);
+    }
 
     async scrapeProduct(productData){
         try{
@@ -55,20 +96,19 @@ class ScrapeService {
         return new Promise(resolve => setTimeout(resolve, milliseconds));
     }
 
-    async scrapeAllProduct(productList,scrapedList,curr_ind){
-        if(curr_ind === this.listLimit){
+    async scrapeAllProduct(productList,scrapedList,curr_ind,max_ind){
+        if(curr_ind === max_ind){
             return ;
         }
         const product = productList[curr_ind];
-        if( curr_ind !== 0 && (curr_ind % this.scrapeRateLimiting) === 0){
-            const random  = Math.floor(this.minLimit + Math.random() * (this.maxLimit - this.minLimit));
-            await this.sleep(random);
+        if( curr_ind !== 0 && (curr_ind % this.scrapeLimit) === 0){
+            await this.sleep(this.delayTime);
         }
         const data = await this.scrapeProduct(product);
         if(data.success){
             scrapedList.push(data);
         }
-        await this.scrapeAllProduct(productList,scrapedList,curr_ind+1);
+        await this.scrapeAllProduct(productList,scrapedList,curr_ind+1,max_ind);
     }
 }
 

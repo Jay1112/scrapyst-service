@@ -7,69 +7,56 @@ import csvService from '../service/csv-service.mjs';
 import StatusCodeTypes from '../enums/status-code-types.mjs';
 
 class AppController {
-
-    async startScraping(req,res){
+    async doScrape(req,res){
         try{
-            // get users list
-            const usersList = await fireBaseService.getUsers();
+            const MAX_LIMIT = 300 ; 
+            const GROUP_SIZE = 100 ;
+            const company = 'etrade' ;
+            if(!company){
+                res.status(StatusCodeTypes.BAD_REQUEST).json({success : false, data : 'Company Name is missing from query Params'});
+            }else{
+                // get users list
+                const usersList = await fireBaseService.getUsers();
 
-            // get excel sheet data
-            const excelData = await awsService.getProductsFromMasterSheet(process.env.ETRADE_FILE_URL);
+                // get excel sheet data
+                const excelData = await awsService.getProductsFromMasterSheet(process.env.ETRADE_FILE_URL);
 
-            // company name
-            const excel1Company = excelData[0][2]; 
+                // company name
+                const excel1Company = 'ETRADE'; 
 
-            // products
-            let productData = excelData.filter((item,index)=>{
-                if(index <= 1){
-                    return false;
+                // products
+                let productData = excelData.filter((item,index)=>{
+                    if(index <= 1){
+                        return false;
+                    }
+                    return true;
+                })
+                .map((item)=>{
+                    return { SR_NO : item[0], PRODUCT_ID : item[1], TITLE : item[2], True_Deal_Price : item[3]};
+                });
+
+                // scrape service
+                const scrapedList = [];
+                const rangeObj = await fireBaseService.getRange();
+                await scrapeService.scrapeAllProduct(productData,scrapedList,rangeObj.etrade - GROUP_SIZE,rangeObj.etrade-1);
+                const prevScrapedData = scrapeService.getDataContainer();
+                scrapeService.setDataContainer([...prevScrapedData,...scrapedList]);
+                if(rangeObj['etrade'] === MAX_LIMIT){
+                    const finalData = scrapeService.getDataContainer();
+                    const scrapeSheetBuffer = csvService.csvTransformationUsing2DList(finalData,excel1Company);
+                    scrapeService.clearContainer();
+
+                    // file buffers
+                    const bufferArr = [{ companyName : 'ETRADE' ,bufferData :  scrapeSheetBuffer}];
+
+                    // mail service
+                    const mailResponse = await mailService.composeMail(bufferArr,usersList);
                 }
-                return true;
-            })
-            .map((item)=>{
-                return { SR_NO : item[0], PRODUCT_ID : item[1], TITLE : item[2], True_Deal_Price : item[3]};
-            });
-
-            // scrape service
-            const scrapedList = [];
-            await scrapeService.scrapeAllProduct(productData,scrapedList,0);
-
-            const scrapeSheetBuffer = csvService.csvTransformationUsing2DList(scrapedList,excel1Company);
-
-            /* 2nd Company */
-            // get excel sheet data
-            const rkworldExcelData = await awsService.getProductsFromMasterSheet(process.env.RK_WORLD_FILE_URL);
-
-            // company name
-            const excel2Company = rkworldExcelData[0][2]; 
-
-            // products
-            let rkworldData = rkworldExcelData.filter((item,index)=>{
-                if(index <= 1){
-                    return false;
-                }
-                return true;
-            })
-            .map((item)=>{
-                return { SR_NO : item[0], PRODUCT_ID : item[1], TITLE : item[2], True_Deal_Price : item[3]};
-            });
-
-            // scrape service
-            const rkworldDataScrapedList = [];
-            await scrapeService.scrapeAllProduct(rkworldData,rkworldDataScrapedList,0);
-
-            const rkworldDataScrapeSheetBuffer = csvService.csvTransformationUsing2DList(rkworldDataScrapedList,excel2Company);
-
-            // file buffers
-            const bufferArr = [{ companyName : 'ETRADE' ,bufferData :  scrapeSheetBuffer},{ companyName : 'RK_WORLD', bufferData : rkworldDataScrapeSheetBuffer}];
-
-            // mail service
-            const mailResponse = await mailService.composeMail(bufferArr,usersList);
-
-            res.status(StatusCodeTypes.OK).json({success  :true, data : [...scrapedList,...rkworldDataScrapedList]});
-                    
+                await scrapeService.updateRangeForNextStep('etrade',false);
+                res.status(StatusCodeTypes.OK).json({success  :true, data : 'Done'});
+            }
         }catch(err){
-            console.log(err);
+            await scrapeService.updateRangeForNextStep('etrade',true);
             res.status(StatusCodeTypes.BAD_REQUEST).json({ success : false, message : err.message });
         }
     }

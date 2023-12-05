@@ -1,6 +1,6 @@
 import {initializeApp} from "firebase/app";
 import {getFirestore} from "firebase/firestore";
-import { doc, collection, addDoc, getDocs, deleteDoc } from "firebase/firestore";
+import { doc, collection, addDoc, getDocs, deleteDoc, updateDoc } from "firebase/firestore";
 
 class FireBaseService {
 
@@ -38,6 +38,24 @@ class FireBaseService {
           usersList.push(doc.data().email_id);
         });
         return usersList;
+    }
+
+    async getRange(){
+      const userQueryShot = await getDocs(collection(this.db,"ranges"));
+      let rangeObj = {};
+      userQueryShot.forEach((doc)=>{
+        rangeObj = { id : doc.id, etrade : doc.data().etrade, rkworld : doc.data().rkworld }
+      });
+      return rangeObj;
+    }
+
+    async updateRange(docObj,key,value){
+      const updatedObj = doc(this.db, "ranges", docObj.id);
+
+      const obj = {};
+      obj[key] = value;
+
+      await updateDoc(updatedObj,{...obj});
     }
 
 }
