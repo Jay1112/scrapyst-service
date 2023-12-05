@@ -1,13 +1,13 @@
 import cheerio  from 'cheerio-httpcli';
+import axios from 'axios';
 
 class ScrapeService {
 
-    delayTime = 5000 ;
-    scrapeRateLimiting = 50 ;
+    delayTime = 60000 ;
+    scrapeRateLimiting = 10 ;
 
     async scrapeProduct(productData){
         try{
-            await this.sleep(this.delayTime);
             const { PRODUCT_ID } = productData ;
             const { $ } = await cheerio.fetch(`https://www.amazon.in/dp/${PRODUCT_ID}`);
             const Seller_1 = $("#merchant-info > .a-link-normal").text();
@@ -56,13 +56,12 @@ class ScrapeService {
             return ;
         }
         const product = productList[curr_ind];
-        // if( curr_ind !== 0 && (curr_ind % this.scrapeRateLimiting) === 0){
-        //     await this.sleep(this.delayTime);
-        // }
-        const data = await this.scrapeProduct(product);
-        console.log(data);
+        if( curr_ind !== 0 && (curr_ind % this.scrapeRateLimiting) === 0){
+            await this.sleep(this.delayTime);
+        }
+        const data = await axios.get(`https://2pjjtj92mb.execute-api.ap-south-1.amazonaws.com/default/scrape-product?${product.PRODUCT_ID}`);
         if(data.success){
-            scrapedList.push(data);
+            scrapedList.push({...data,...data.data.data});
         }
         await this.scrapeAllProduct(productList,scrapedList,curr_ind+1);
     }
