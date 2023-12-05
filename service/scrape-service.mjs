@@ -1,10 +1,14 @@
 import cheerio  from 'cheerio-httpcli';
-import axios from 'axios';
+import { config } from 'dotenv';
+
+config();
 
 class ScrapeService {
 
-    delayTime = 60000 ;
-    scrapeRateLimiting = 10 ;
+    minLimit = process.env.MIN_LIMIT ;
+    maxLimit = process.env.MAX_LIMIT ;
+    scrapeRateLimiting = process.env.RATE_LIMIT_VALUE ;
+    listLimit = process.env.LIST_LIMIT || 50;
 
     async scrapeProduct(productData){
         try{
@@ -52,16 +56,17 @@ class ScrapeService {
     }
 
     async scrapeAllProduct(productList,scrapedList,curr_ind){
-        if(curr_ind === productList.length){
+        if(curr_ind === this.listLimit){
             return ;
         }
         const product = productList[curr_ind];
         if( curr_ind !== 0 && (curr_ind % this.scrapeRateLimiting) === 0){
-            await this.sleep(this.delayTime);
+            const random  = Math.floor(this.minLimit + Math.random() * (this.maxLimit - this.minLimit));
+            await this.sleep(random);
         }
-        const data = await axios.get(`https://2pjjtj92mb.execute-api.ap-south-1.amazonaws.com/default/scrape-product?${product.PRODUCT_ID}`);
+        const data = await this.scrapeProduct(product);
         if(data.success){
-            scrapedList.push({...data,...data.data.data});
+            scrapedList.push(data);
         }
         await this.scrapeAllProduct(productList,scrapedList,curr_ind+1);
     }
