@@ -37,14 +37,20 @@ class ScrapeService {
             value = -1;
         }
         switch(value){
-            case -1 :   value = 100 ;
+            case -1 :   value = 50 ;
                         this.clearContainer();
                         break;
-            case 100 :  value = 200 ; 
+            case 50 :  value = 100 ; 
                         break ;
-            case 200 :  value = 300 ; 
+            case 100 :  value = 150 ; 
                         break ;
-            case 300 :  value = 100 ;
+            // case 150 :  value = 200 ; 
+            //             break ;
+            // case 200 :  value = 250 ; 
+            //             break ;
+            // case 250 :  value = 300 ; 
+            //             break ;
+            case 150 :  value = 50 ;
                         this.clearContainer() ;  
                         break;
         }
@@ -101,6 +107,9 @@ class ScrapeService {
             return ;
         }
         const product = productList[curr_ind];
+        if(!product){
+            return ;
+        }
         if( curr_ind !== 0 && (curr_ind % this.scrapeLimit) === 0){
             await this.sleep(this.delayTime);
         }

@@ -9,8 +9,8 @@ import StatusCodeTypes from '../enums/status-code-types.mjs';
 class AppController {
     async doScrape(req,res){
         try{
-            const MAX_LIMIT = 300 ; 
-            const GROUP_SIZE = 100 ;
+            const MAX_LIMIT = 150 ; 
+            const GROUP_SIZE = 50 ;
             const company = 'etrade' ;
             if(!company){
                 res.status(StatusCodeTypes.BAD_REQUEST).json({success : false, data : 'Company Name is missing from query Params'});
@@ -38,7 +38,7 @@ class AppController {
                 // scrape service
                 const scrapedList = [];
                 const rangeObj = await fireBaseService.getRange();
-                await scrapeService.scrapeAllProduct(productData,scrapedList,rangeObj.etrade - GROUP_SIZE,rangeObj.etrade-1);
+                await scrapeService.scrapeAllProduct(productData,scrapedList,rangeObj.etrade - GROUP_SIZE,rangeObj.etrade);
                 const prevScrapedData = scrapeService.getDataContainer();
                 scrapeService.setDataContainer([...prevScrapedData,...scrapedList]);
                 if(rangeObj['etrade'] === MAX_LIMIT){
