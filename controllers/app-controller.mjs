@@ -10,10 +10,10 @@ config();
 
 class AppController {
     async doScraping(req,res){
-        const GROUP_SIZE    = 50 ; 
-        const MAX_LIMIT     = 150 ;
+        const GROUP_SIZE    = 25 ; 
+        const MAX_LIMIT     = 300 ;
+        let company = process.env.COMPANY;
         try{
-            let company = process.env.COMPANY;
             let scomapny = company.toLowerCase();
 
             const usersList = await fireBaseService.getUsers();
@@ -45,7 +45,6 @@ class AppController {
 
         }catch(err){
             console.log(err);
-            await scrapeService.updateRangeForNextStep(company.toLowerCase(),true);
             res.status(StatusCodeTypes.OK).json({ success : true, message : err.message, stack : err.stack() });
         }
     }
