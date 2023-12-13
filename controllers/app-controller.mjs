@@ -22,7 +22,8 @@ class AppController {
 
             const scrapedList = [];
             const rangeObj = await fireBaseService.getRange();
-            await scrapeService.scrapeAllProduct(productsData,scrapedList,rangeObj[scomapny] - GROUP_SIZE,rangeObj[scomapny]);
+            // await scrapeService.scrapeAllProduct(productsData,scrapedList,rangeObj[scomapny] - GROUP_SIZE,rangeObj[scomapny]);
+            await scrapeService.scrapeAllProduct(productsData,scrapedList,0,MAX_LIMIT);
             await scrapeService.updateRangeForNextStep(company.toLowerCase(),false,rangeObj[scomapny],GROUP_SIZE,MAX_LIMIT);
 
             const s3PutRequest = awsService.createPutPublicJsonRequest(
