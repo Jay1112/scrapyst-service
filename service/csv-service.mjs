@@ -1,6 +1,30 @@
 import xlsx from 'xlsx';
+import axios from  'axios';
 
 class CsvService {
+
+    async extractProductDataFromJSON(start,end,groupSize){
+        
+        const apis = [];
+        for(let i = start; i<= end; i+=groupSize){
+            const url = `https://scrapyst.s3.ap-south-1.amazonaws.com/jsonfiles/${i}.json`;
+            apis.push(url);
+        }
+
+        const axiosAPIs = apis.map((api)=>{
+            return  axios.get(api);
+        });
+
+        const response = await Promise.allSettled(axiosAPIs);
+        let jsonData = [];
+        response.forEach((item)=>{
+            if(item.status === 'fulfilled'){
+                jsonData.push(...item.value.data.productsData);
+            }
+          })
+        return jsonData ;
+    }
+
 
     csvTransformationUsing2DList(productList,primeSeller){
         // scrapeSheet

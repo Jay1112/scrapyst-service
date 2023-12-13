@@ -22,7 +22,7 @@ class MailService {
       });
     }
 
-    async composeMail(buffers,usersList){
+    async composeMail(buffers,usersList,){
       try{
         let MailGenerator = new Mailgen({
           theme : 'default',

@@ -1,8 +1,8 @@
-import express  from 'express';
-import appController from '../controller/app-controller.mjs';
+import express from 'express';
+import appController from '../controllers/app-controller.mjs';
 
-const appRouter = express.Router();
+const router = express.Router();
 
-appRouter.get('/start-scraping',appController.doScrape);
+router.get('/scrape-data',appController.doScraping);
 
-export default appRouter;
+export default router;

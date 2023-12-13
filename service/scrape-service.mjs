@@ -1,60 +1,11 @@
-import cheerio  from 'cheerio-httpcli';
-import { config } from 'dotenv';
-import fireBaseService from './firebase-service.mjs';
-
-config();
+import cheerio from 'cheerio-httpcli';
+import fireBaseService from "./firebase-service.mjs";
 
 class ScrapeService {
 
-    dataContainer = null ;
-    delayTime = 60000 ;
-    scrapeLimit = 25 ;
-
-    constructor(){
-        this.dataContainer = new Map();
-        this.delayTime = 60000;
-    }
-
-    clearContainer(){
-        this.dataContainer.clear();
-    }
-
-    setDataContainer(data){
-        this.dataContainer.set("data",data);
-    }
-
-    getDataContainer(){
-        if(!this.dataContainer.get("data")){
-            return [];
-        }
-        return this.dataContainer.get("data");
-    }
-
-    async updateRangeForNextStep(company,isError){
-        const rangeObj = await fireBaseService.getRange();
-        let value = rangeObj[company];
-        if(isError){
-            value = -1;
-        }
-        switch(value){
-            case -1 :   value = 50 ;
-                        this.clearContainer();
-                        break;
-            case 50 :  value = 100 ; 
-                        break ;
-            case 100 :  value = 150 ; 
-                        break ;
-            // case 150 :  value = 200 ; 
-            //             break ;
-            // case 200 :  value = 250 ; 
-            //             break ;
-            // case 250 :  value = 300 ; 
-            //             break ;
-            case 150 :  value = 50 ;
-                        this.clearContainer() ;  
-                        break;
-        }
-        await fireBaseService.updateRange(rangeObj,company,value);
+    getRandomDelay(){
+        const delay = Math.floor(Math.random() * 10 ) + 1;
+        return delay;
     }
 
     async scrapeProduct(productData){
@@ -102,19 +53,30 @@ class ScrapeService {
         return new Promise(resolve => setTimeout(resolve, milliseconds));
     }
 
+    async updateRangeForNextStep(company,isError){
+        const rangeObj = await fireBaseService.getRange();
+        let value = rangeObj[company];
+        if(isError){
+            value = -1;
+        }
+        switch(value){
+            case 10 : value = 20; break;
+            case 20 : value = 30; break;
+            case 30 : value = 10; break;
+        }
+        await fireBaseService.updateRange(rangeObj,company,value);
+    }
+
     async scrapeAllProduct(productList,scrapedList,curr_ind,max_ind){
         if(curr_ind === max_ind){
             return ;
         }
         const product = productList[curr_ind];
-        if(!product){
-            return ;
-        }
-        if( curr_ind !== 0 && (curr_ind % this.scrapeLimit) === 0){
-            await this.sleep(this.delayTime);
-        }
+        const random = this.getRandomDelay();
+        await this.sleep(random);
         const data = await this.scrapeProduct(product);
         if(data.success){
+            console.log(data);
             scrapedList.push(data);
         }
         await this.scrapeAllProduct(productList,scrapedList,curr_ind+1,max_ind);
