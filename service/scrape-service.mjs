@@ -53,16 +53,16 @@ class ScrapeService {
         return new Promise(resolve => setTimeout(resolve, milliseconds));
     }
 
-    async updateRangeForNextStep(company,isError){
+    async updateRangeForNextStep(company,isError,value,GROUP_SIZE,MAX_LIMIT){
         const rangeObj = await fireBaseService.getRange();
         let value = rangeObj[company];
         if(isError){
             value = -1;
         }
-        switch(value){
-            case 10 : value = 20; break;
-            case 20 : value = 30; break;
-            case 30 : value = 10; break;
+        if(value === MAX_LIMIT){
+            value = GROUP_SIZE;
+        }else{
+            value = value + GROUP_SIZE;
         }
         await fireBaseService.updateRange(rangeObj,company,value);
     }

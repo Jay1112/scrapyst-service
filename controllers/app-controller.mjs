@@ -23,7 +23,7 @@ class AppController {
             const scrapedList = [];
             const rangeObj = await fireBaseService.getRange();
             await scrapeService.scrapeAllProduct(productsData,scrapedList,rangeObj[scomapny] - GROUP_SIZE,rangeObj[scomapny]);
-            await scrapeService.updateRangeForNextStep(company.toLowerCase(),false);
+            await scrapeService.updateRangeForNextStep(company.toLowerCase(),false,rangeObj[scomapny],GROUP_SIZE,MAX_LIMIT);
 
             const s3PutRequest = awsService.createPutPublicJsonRequest(
                 'scrapyst/jsonfiles',
