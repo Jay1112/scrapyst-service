@@ -4,10 +4,10 @@ import axios from 'axios';
 
 class ScrapeService {
 
-    lambdaConcurrency = 5 ;
+    lambdaConcurrency = 1 ;
 
     getRandomDelay(){
-        const delay = Math.floor(Math.random() * 30000 ) + 60000;
+        const delay = 15000;
         return delay;
     }
 
@@ -74,37 +74,18 @@ class ScrapeService {
         if(curr_ind >= max_ind){
             return ;
         }
-        // const product = productList[curr_ind];
-        // const random = this.getRandomDelay();
-        // await this.sleep(random);
-        // const data = await this.scrapeProduct(product);
-        // if(data.success){
-        //     scrapedList.push(data);
-        // }
-        // https://jcivl3hiqaxhbwfzutidtv7oye0hwwye.lambda-url.ap-south-1.on.aws/?product_id=B084MMG3PB
 
-        const axiosAPIs = [];
-        for(let i = curr_ind ; i < curr_ind + this.lambdaConcurrency; i++){
-            if(i <= max_ind){
-                const product = productList[i];
-                axiosAPIs.push(axios.get(`https://jcivl3hiqaxhbwfzutidtv7oye0hwwye.lambda-url.ap-south-1.on.aws/?product_id=${product.PRODUCT_ID}`));
-            }else{
-                break;
-            }
-        }
-
-        try{
-            const response = await Promise.allSettled(axiosAPIs);
-            response.forEach((item,index)=>{
-                if(item.status === 'fulfilled'){
-                    const product = productList[curr_ind + index];
-                    scrapedList.push({ ...item?.value?.data?.data, ...product });
-                }
-            });
-        }catch(error){
-        }
+        const product = productList[curr_ind];
         const random = this.getRandomDelay();
         await this.sleep(random);
+        const data = await this.scrapeProduct(product);
+        if(data.success){
+            scrapedList.push(data);
+        }else if(!product){
+            // continue
+        }else{
+            scrapedList.push({ ...product });
+        }
         await this.scrapeAllProduct(productList,scrapedList,curr_ind+this.lambdaConcurrency,max_ind);
     }
 }

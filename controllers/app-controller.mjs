@@ -11,7 +11,7 @@ config();
 class AppController {
     async doScraping(req,res){
         const GROUP_SIZE    = 25 ; 
-        const MAX_LIMIT     = 300 ;
+        const MAX_LIMIT     = 250 ;
         let company = process.env.COMPANY;
         try{
             let scomapny = company.toLowerCase();
@@ -44,7 +44,6 @@ class AppController {
             res.status(StatusCodeTypes.OK).json({ success : true, message : 'Data Extracted SuccessFully', stack : null });
 
         }catch(err){
-            console.log(err);
             res.status(StatusCodeTypes.OK).json({ success : true, message : err.message, stack : err.stack() });
         }
     }
