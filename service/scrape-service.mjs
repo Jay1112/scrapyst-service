@@ -4,7 +4,7 @@ import fireBaseService from "./firebase-service.mjs";
 class ScrapeService {
 
     getRandomDelay(){
-        const delay = Math.floor(Math.random() * 10 ) + 1;
+        const delay = Math.floor(Math.random() * 40 ) + 20;
         return delay;
     }
 
