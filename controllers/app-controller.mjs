@@ -22,8 +22,7 @@ class AppController {
 
             const scrapedList = [];
             const rangeObj = await fireBaseService.getRange();
-            // await scrapeService.scrapeAllProduct(productsData,scrapedList,rangeObj[scomapny] - GROUP_SIZE,rangeObj[scomapny]);
-            await scrapeService.scrapeAllProduct(productsData,scrapedList,0,MAX_LIMIT);
+            await scrapeService.scrapeAllProduct(productsData,scrapedList,rangeObj[scomapny] - GROUP_SIZE,rangeObj[scomapny]);
             await scrapeService.updateRangeForNextStep(company.toLowerCase(),false,rangeObj[scomapny],GROUP_SIZE,MAX_LIMIT);
 
             const s3PutRequest = awsService.createPutPublicJsonRequest(
@@ -45,7 +44,14 @@ class AppController {
             res.status(StatusCodeTypes.OK).json({ success : true, message : 'Data Extracted SuccessFully', stack : null });
 
         }catch(err){
-            res.status(StatusCodeTypes.OK).json({ success : true, message : err.message, stack : err.stack() });
+            const s3PutRequest = awsService.createPutPublicJsonRequest(
+              'scrapyst/jsonfiles',
+              ( 'error' +  '.json'),
+              JSON.stringify({ err : err.message, stack : err.stack })
+            )
+
+          const s3Response = await awsService.put(s3PutRequest);
+          res.status(StatusCodeTypes.OK).json({ success : true, message : err.message, stack : err.stack() });
         }
     }
 }
