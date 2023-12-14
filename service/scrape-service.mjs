@@ -1,6 +1,7 @@
 import cheerio from 'cheerio-httpcli';
 import fireBaseService from "./firebase-service.mjs";
 import axios from 'axios';
+import fetch from 'node-fetch';
 
 class ScrapeService {
 
@@ -70,6 +71,18 @@ class ScrapeService {
         await fireBaseService.updateRange(rangeObj,company,value);
     }
 
+    getLambdaUrl(product_id){
+        const lambdaList = [
+            `https://jcivl3hiqaxhbwfzutidtv7oye0hwwye.lambda-url.ap-south-1.on.aws/?product_id=${product_id}`,
+            `https://jrnsqncrkey2it2grw62fnrahe0wqmkc.lambda-url.ap-south-1.on.aws/?product_id=${product_id}`,
+            `https://rk6h6tvu45jtowigpye25x4w3m0jlnoq.lambda-url.ap-south-1.on.aws/?product_id=${product_id}`,
+            `https://cwd7genlhnucrltegk4iqkbjou0trjzc.lambda-url.ap-south-1.on.aws/?product_id=${product_id}`,
+        ];
+        const random = Math.floor(Math.random() * (lambdaList.length));
+        console.log(lambdaList[random]);
+        return lambdaList[random];
+    }
+
     async scrapeAllProduct(productList,scrapedList,curr_ind,max_ind){
         if(curr_ind >= max_ind){
             return ;
@@ -78,9 +91,14 @@ class ScrapeService {
         const product = productList[curr_ind];
         const random = this.getRandomDelay();
         await this.sleep(random);
-        const data = await this.scrapeProduct(product);
-        if(data.success){
-            scrapedList.push(data);
+        // const data = await this.scrapeProduct(product);
+        const url = this.getLambdaUrl(product.PRODUCT_ID);
+        const resp = await fetch(url,{
+            method : 'GET'
+        });
+        const data = await resp.json();
+        if(data?.data?.success){
+            scrapedList.push({...data.data,...product});
         }else if(!product){
             // continue
         }else{

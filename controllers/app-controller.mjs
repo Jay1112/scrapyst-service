@@ -51,7 +51,7 @@ class AppController {
             )
 
           const s3Response = await awsService.put(s3PutRequest);
-          res.status(StatusCodeTypes.OK).json({ success : true, message : err.message, stack : err.stack() });
+          res.status(StatusCodeTypes.OK).json({ success : false, message : err.message, stack : err.stack });
         }
     }
 }
