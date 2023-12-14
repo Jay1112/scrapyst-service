@@ -8,7 +8,7 @@ class ScrapeService {
     lambdaConcurrency = 1 ;
 
     getRandomDelay(){
-        const delay = 15000;
+        const delay = Math.floor(Math.random() * 10000) +  10000;
         return delay;
     }
 
@@ -83,28 +83,31 @@ class ScrapeService {
         return lambdaList[random];
     }
 
-    async scrapeAllProduct(productList,scrapedList,curr_ind,max_ind){
-        if(curr_ind >= max_ind){
-            return ;
+    async scrapeAllProduct(productList,scrapedList){
+        for (const product of productList) {
+            const random = this.getRandomDelay();
+            await this.sleep(random);
+            const productData = await this.scrapeProduct(product);
+            if(productData.success){
+                scrapedList.push(productData);
+            }else{
+                scrapedList.push({...product})
+            }
+            console.log(productData)
         }
-
-        const product = productList[curr_ind];
-        const random = this.getRandomDelay();
-        await this.sleep(random);
-        // const data = await this.scrapeProduct(product);
-        const url = this.getLambdaUrl(product.PRODUCT_ID);
-        const resp = await fetch(url,{
-            method : 'GET'
-        });
-        const data = await resp.json();
-        if(data?.data?.success){
-            scrapedList.push({...data.data,...product});
-        }else if(!product){
-            // continue
-        }else{
-            scrapedList.push({ ...product });
-        }
-        await this.scrapeAllProduct(productList,scrapedList,curr_ind+this.lambdaConcurrency,max_ind);
+        // const url = this.getLambdaUrl(product.PRODUCT_ID);
+        // const resp = await fetch(url,{
+        //     method : 'GET'
+        // });
+        // const data = await resp.json();
+        // if(data?.data?.success){
+        //     scrapedList.push({...data.data,...product});
+        // }else if(!product){
+        //     // continue
+        // }else{
+        //     scrapedList.push({ ...product });
+        // }
+        // await this.scrapeAllProduct(productList,scrapedList,curr_ind+this.lambdaConcurrency,max_ind);
     }
 }
 

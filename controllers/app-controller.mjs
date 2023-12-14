@@ -10,7 +10,7 @@ config();
 
 class AppController {
     async doScraping(req,res){
-        const GROUP_SIZE    = 25 ; 
+        const GROUP_SIZE    = 250 ; 
         const MAX_LIMIT     = 250 ;
         let company = process.env.COMPANY;
         try{
@@ -22,24 +22,22 @@ class AppController {
 
             const scrapedList = [];
             const rangeObj = await fireBaseService.getRange();
-            await scrapeService.scrapeAllProduct(productsData,scrapedList,rangeObj[scomapny] - GROUP_SIZE,rangeObj[scomapny]);
-            await scrapeService.updateRangeForNextStep(company.toLowerCase(),false,rangeObj[scomapny],GROUP_SIZE,MAX_LIMIT);
+            await scrapeService.scrapeAllProduct(productsData,scrapedList);
+            // await scrapeService.updateRangeForNextStep(company.toLowerCase(),false,rangeObj[scomapny],GROUP_SIZE,MAX_LIMIT);
 
             const s3PutRequest = awsService.createPutPublicJsonRequest(
                 'scrapyst/jsonfiles',
-                ( rangeObj[scomapny] +  '.json'),
+                ( MAX_LIMIT +  '.json'),
                 JSON.stringify({ productsData: scrapedList })
               )
 
             const s3Response = await awsService.put(s3PutRequest);
 
-              const jsonData = await csvService.extractProductDataFromJSON(GROUP_SIZE,MAX_LIMIT,GROUP_SIZE);
-              const buffer = await csvService.csvTransformationUsing2DList(jsonData,scomapny);
+            const jsonData = await csvService.extractProductDataFromJSON(GROUP_SIZE,MAX_LIMIT,GROUP_SIZE);
+            const buffer = await csvService.csvTransformationUsing2DList(jsonData,scomapny);
 
-              if(rangeObj[scomapny] === MAX_LIMIT){
-                const bufferArr = [{ companyName : 'ETRADE' ,bufferData :  buffer}];
-                const mailResponse = await mailService.composeMail(bufferArr,usersList);
-              }
+            const bufferArr = [{ companyName : 'ETRADE' ,bufferData :  buffer}];
+            const mailResponse = await mailService.composeMail(bufferArr,usersList);
 
             res.status(StatusCodeTypes.OK).json({ success : true, message : 'Data Extracted SuccessFully', stack : null });
 
