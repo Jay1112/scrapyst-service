@@ -84,30 +84,31 @@ class ScrapeService {
     }
 
     async scrapeAllProduct(productList,scrapedList){
+        let toggle = true;
         for (const product of productList) {
             const random = this.getRandomDelay();
             await this.sleep(random);
-            const productData = await this.scrapeProduct(product);
-            if(productData.success){
-                scrapedList.push(productData);
+            if(toggle){
+                const productData = await this.scrapeProduct(product);
+                if(productData.success){
+                    scrapedList.push(productData);
+                }else{
+                    scrapedList.push({...product})
+                }
             }else{
-                scrapedList.push({...product})
+                const resp = await fetch('https://product-scraper-1n2a.vercel.app/api/product',{
+                    method : 'POST',
+                    body : JSON.stringify({urls : product.PRODUCT_ID})
+                });
+                const data = await resp.json();
+                if(data?.success){
+                    scrapedList.push({...data?.data['0'],...product});
+                }else{
+                    scrapedList.push({...product})
+                }
             }
-            console.log(productData)
+            toggle = !toggle;
         }
-        // const url = this.getLambdaUrl(product.PRODUCT_ID);
-        // const resp = await fetch(url,{
-        //     method : 'GET'
-        // });
-        // const data = await resp.json();
-        // if(data?.data?.success){
-        //     scrapedList.push({...data.data,...product});
-        // }else if(!product){
-        //     // continue
-        // }else{
-        //     scrapedList.push({ ...product });
-        // }
-        // await this.scrapeAllProduct(productList,scrapedList,curr_ind+this.lambdaConcurrency,max_ind);
     }
 }
 
